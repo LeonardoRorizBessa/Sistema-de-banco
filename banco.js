@@ -7,18 +7,26 @@ function criar_cliente(nome, cpf, login, senha, saldoInicial, poupanca, credito)
     saldo: saldoInicial,
     poupanca: poupanca,
     credito: credito,
+    transacoes: [],
+    tentativas_login: 0,
 
     depositar_dinheiro: function(valor) {
-      this.saldo += valor;
-      console.log(`R$ ${valor} adicionados. Novo saldo: R$ ${this.saldo}`);
+      if(valor > 0){
+        this.saldo += valor;
+        console.log(`R$ ${valor} adicionados. Novo saldo: R$ ${this.saldo}`);
+      }
+      else{
+        console.log(`Valor inválido para depósito.`);
+      }
     },
 
     sacar_dinheiro: function(valor) {
-      if (this.saldo >= valor) {
+      if(this.saldo >= valor){
         this.saldo -= valor;
         console.log(`R$ ${valor} retirados. Novo saldo: R$ ${this.saldo}`);
-      } else {
-        console.log('Saldo insuficiente.');
+      }
+      else{
+        console.log('Valor inválido para saque.');
       }
     },
 
@@ -49,11 +57,17 @@ function criar_cliente(nome, cpf, login, senha, saldoInicial, poupanca, credito)
 
     autenticar: function(login, senha){
       if(this.login === login && this.senha === senha){
+        this.tentativasLogin = 0;
         console.log(`Login bem-sucedido!`);
         return true;
       }
       else{
-        console.log(`Login ou senha incorretos!`);
+        this.tentativasLogin++;
+        if(this.tentativasLogin >= 3){
+          console.log(`Conta bloqueada após 3 tentativas inválidas!`);
+          return false;
+        }
+        console.log(`Login ou senha incorretos! Tentativas: ${this.tentativasLogin}`);
         return false;
       }
     },
@@ -79,7 +93,7 @@ function criar_cliente(nome, cpf, login, senha, saldoInicial, poupanca, credito)
       }
     },
 
-    gerarJuros: function(taxa){
+    gerar_juros_poupanca: function(taxa){
       this.poupanca += this.poupanca * taxa;
       console.log(`Juros aplicados. Novo saldo de poupança: R$ ${this.poupanca}`);
     },
@@ -93,6 +107,37 @@ function criar_cliente(nome, cpf, login, senha, saldoInicial, poupanca, credito)
       else{
         console.log(`Saldo e limite de credito insuficiente.`);
       }
+    },
+
+    gerar_juros_credito: function(taxa){
+      this.credito += this.credito * taxa;
+      console.log(`Juros de crédito aplicados. Novo saldo de crédito: R$ ${this.credito}`);
+    },
+
+    registrar_transacoes: function(tipo, valor){
+      this.transacoes.push({ tipo, valor, data: new Date() });
+    },
+
+    agendar_transacao: function(tipo, valor, data){
+      this.transacoes.push({ tipo, valor, data });
+      console.log(`Transação agendada para ${data}`);
+    },
+    
+    gerar_extrato: function(){
+      console.log(`Extrato Bancário: `);
+      this.transacoes.forEach(transacao => {
+        console.log(`${transacao.data} - ${transacao.tipo}: R$ ${transacao.valor}`);
+      });
+    },
+
+    bloquear_conta: function(){
+      this.status_conta = 'bloqueada';
+      console.log(`Conta bloqueada.`);
+    },
+
+    desbloquear_conta: function(){
+      this.status_conta = 'ativa';
+      console.log(`Conta desbloqueada.`);
     }
   };
 }
@@ -100,18 +145,3 @@ function criar_cliente(nome, cpf, login, senha, saldoInicial, poupanca, credito)
 var cliente1 = criar_cliente('Leonardo', '111.222.333-44', 'LeoBessa', '12345678', 3000, 0,10000);
 
 var cliente2 = criar_cliente('Pedro', '999.888.777-66', 'PedroSilva', '98765432', 2000, 0, 5000);
-
-cliente1.consultar_cliente();
-cliente2.consultar_cliente();
-//cliente1.depositar_dinheiro(1500);
-//cliente1.sacar_dinheiro(3000);
-//cliente1.sacar_dinheiro(2000);
-//cliente1.consultar_saldo();
-//cliente1.autenticar('LeoBessa', '12345678');
-//cliente1.mudar_senha('12345678', '123456');
-//cliente1.consultar_cliente();
-//cliente1.investir_poupanca(500);
-//cliente1.transferir_dinheiro(cliente2, 500);
-//cliente2.transferir_dinheiro(cliente1, 1000);
-//cliente1.credito_emprestimo(2000);
-//cliente2.credito_emprestimo(7000);
